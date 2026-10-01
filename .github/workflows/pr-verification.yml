@@ -122,7 +122,7 @@ jobs:
           if docker run --rm -e NODE_ENV=production pnc-bff:ci; then echo "must refuse to start"; exit 1; fi
       - name: Web image serves with a CSP header
         run: |
-          docker run -d --name web --read-only --tmpfs /tmp --tmpfs /var/cache/nginx --tmpfs /var/run --cap-drop ALL -p 8080:8080 pnc-web:ci
+          docker run -d --name web --add-host bff:127.0.0.1 --read-only --tmpfs /tmp --tmpfs /var/cache/nginx --tmpfs /var/run --cap-drop ALL -p 8080:8080 pnc-web:ci
           for i in $(seq 1 20); do curl -fsS localhost:8080/healthz >/dev/null && break || sleep 1; done
           curl -fsSI localhost:8080/ | grep -i "content-security-policy"
 
