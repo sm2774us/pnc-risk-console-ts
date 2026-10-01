@@ -82,3 +82,43 @@ test('end-to-end in a scratch git repo: first release, then patch, then no-op', 
   assert.match(readFileSync(join(dir, 'RELEASE_NOTES.md'), 'utf8'), /handle null/);
   assert.match(readFileSync(join(dir, 'CHANGELOG.md'), 'utf8'), /## \[1\.0\.1\][\s\S]*## \[1\.0\.0\]/);
 });
+
+/** Runs the real "Commit and tag" step from release.yml in a scratch repo (regression for the first-release failure). */
+function runCommitAndTagStep(dir, version) {
+  const wf = readFileSync(resolve('.github/workflows/release.yml'), 'utf8');
+  const block = /- name: Commit and tag\n\s+run: \|\n((?:\s{10}.*\n)+)/.exec(wf)?.[1];
+  assert.ok(block, 'Commit and tag step not found in release.yml');
+  const script = block
+    .split('\n')
+    .map((l) => l.slice(10))
+    .join('\n');
+  return execFileSync('bash', ['-e', '-c', script], { cwd: dir, encoding: 'utf8', env: { ...process.env, VERSION: version } });
+}
+
+test('release.yml commit-and-tag step: first release (no file changes) tags HEAD, later release commits then tags', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'step-'));
+  const sh = (...a) =>
+    execFileSync(a[0], a.slice(1), {
+      cwd: dir,
+      encoding: 'utf8',
+      env: { ...process.env, GIT_AUTHOR_NAME: 't', GIT_AUTHOR_EMAIL: 't@t', GIT_COMMITTER_NAME: 't', GIT_COMMITTER_EMAIL: 't@t' },
+    }).trim();
+  cpSync(resolve('tools'), join(dir, 'tools'), { recursive: true });
+  writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'x', version: '1.0.0' }, null, 2) + '\n');
+  writeFileSync(join(dir, 'CHANGELOG.md'), '# Changelog\n\n## [1.0.0] - 2026-10-01\n\nseed\n');
+  sh('git', 'init', '-q', '-b', 'main');
+  sh('git', 'add', '.');
+  sh('git', 'commit', '-qm', 'feat: first');
+  const head = sh('git', 'rev-parse', 'HEAD');
+  sh('node', 'tools/release.mjs', 'apply');
+  runCommitAndTagStep(dir, '1.0.0'); // used to exit 1: "nothing to commit"
+  assert.equal(sh('git', 'rev-list', '-n1', 'v1.0.0'), head);
+  assert.equal(sh('git', 'rev-parse', 'HEAD'), head);
+  writeFileSync(join(dir, 'a.txt'), 'a');
+  sh('git', 'add', '.');
+  sh('git', 'commit', '-qm', 'fix(api): y (#2)');
+  sh('node', 'tools/release.mjs', 'apply');
+  runCommitAndTagStep(dir, '1.0.1');
+  assert.equal(sh('git', 'log', '-1', '--format=%s'), 'chore(release): v1.0.1 [skip ci]');
+  assert.equal(sh('git', 'rev-list', '-n1', 'v1.0.1'), sh('git', 'rev-parse', 'HEAD'));
+});
