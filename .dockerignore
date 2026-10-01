@@ -4,7 +4,7 @@ coverage
 .nx
 .angular
 .git
-infra
+infra/terraform
 k8s
 docs
 playwright-report
