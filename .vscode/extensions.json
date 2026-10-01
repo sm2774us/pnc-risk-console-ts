@@ -1,0 +1,12 @@
+{
+  "recommendations": [
+    "angular.ng-template",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "nrwl.angular-console",
+    "ms-playwright.playwright",
+    "vitest.explorer",
+    "hashicorp.terraform",
+    "editorconfig.editorconfig"
+  ]
+}

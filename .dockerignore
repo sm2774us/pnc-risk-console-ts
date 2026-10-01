@@ -1,0 +1,12 @@
+node_modules
+dist
+coverage
+.nx
+.angular
+.git
+infra
+k8s
+docs
+playwright-report
+test-results
+*.md

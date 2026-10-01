@@ -1,0 +1,29 @@
+{
+  "name": "bff",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/bff/src",
+  "projectType": "application",
+  "tags": ["scope:risk", "type:bff"],
+  "targets": {
+    "serve": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "options": { "command": "tsx watch --tsconfig apps/bff/tsconfig.app.json apps/bff/src/main.ts", "cwd": "{workspaceRoot}" }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/dist/apps/bff"],
+      "options": { "command": "node tools/build-bff.mjs", "cwd": "{workspaceRoot}" }
+    },
+    "test": { "executor": "nx:run-commands", "options": { "command": "vitest run --coverage", "cwd": "apps/bff" } },
+    "test-integration": {
+      "executor": "nx:run-commands",
+      "options": { "command": "vitest run -c vitest.integration.config.ts", "cwd": "apps/bff" }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": { "command": "tsc -p tsconfig.app.json --noEmit && tsc -p tsconfig.spec.json --noEmit", "cwd": "apps/bff" }
+    },
+    "lint": { "executor": "@nx/eslint:lint" }
+  }
+}

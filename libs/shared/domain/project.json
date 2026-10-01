@@ -1,0 +1,15 @@
+{
+  "name": "shared-domain",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/shared/domain/src",
+  "projectType": "library",
+  "tags": ["scope:shared", "type:domain"],
+  "targets": {
+    "test": { "executor": "nx:run-commands", "options": { "command": "vitest run --coverage", "cwd": "libs/shared/domain" } },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": { "command": "tsc -p tsconfig.lib.json --noEmit", "cwd": "libs/shared/domain" }
+    },
+    "lint": { "executor": "@nx/eslint:lint" }
+  }
+}

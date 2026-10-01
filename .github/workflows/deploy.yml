@@ -1,0 +1,52 @@
+name: Deploy
+# Manual only. Authenticates with short-lived OIDC tokens; no cloud keys are stored in GitHub.
+on:
+  workflow_dispatch:
+    inputs:
+      cloud: { description: Target cloud, type: choice, options: [aws, gcp], required: true }
+      environment: { description: Target environment, type: choice, options: [dev, prod], required: true }
+      version: { description: 'Image tag (e.g. 1.0.0)', type: string, required: true }
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: deploy-${{ inputs.cloud }}-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    # Skipped until the deployment variables exist (see WALKTHROUGH Part 8).
+    if: vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }} # prod environment holds required reviewers
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: AWS credentials (OIDC)
+        if: inputs.cloud == 'aws'
+        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
+        with: { role-to-assume: '${{ vars.AWS_DEPLOY_ROLE_ARN }}', aws-region: '${{ vars.AWS_REGION }}' }
+      - name: Cluster access (EKS)
+        if: inputs.cloud == 'aws'
+        run: aws eks update-kubeconfig --name "${{ vars.CLUSTER_NAME }}" --region "${{ vars.AWS_REGION }}"
+      - name: GCP credentials (Workload Identity Federation)
+        if: inputs.cloud == 'gcp'
+        uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2
+        with: { workload_identity_provider: '${{ vars.GCP_WIF_PROVIDER }}', service_account: '${{ vars.GCP_DEPLOY_SA }}' }
+      - name: Cluster access (GKE)
+        if: inputs.cloud == 'gcp'
+        uses: google-github-actions/get-gke-credentials@64bc7249bbcf78056bb92f14d3cedc2da193946c # v2
+        with: { cluster_name: '${{ vars.CLUSTER_NAME }}', location: '${{ vars.GCP_REGION }}' }
+      - name: Apply overlay with pinned image tags
+        working-directory: k8s/overlays/${{ inputs.environment }}
+        run: |
+          kubectl kustomize . >/dev/null
+          kustomize edit set image ghcr.io/sm2774us/pnc-risk-console-bff=ghcr.io/sm2774us/pnc-risk-console-bff:${{ inputs.version }} \
+                                   ghcr.io/sm2774us/pnc-risk-console-web=ghcr.io/sm2774us/pnc-risk-console-web:${{ inputs.version }}
+          kubectl apply -k .
+      - name: Wait for rollout (auto-fail on bad release)
+        run: |
+          ns=pnc-risk-${{ inputs.environment }}
+          kubectl -n "$ns" rollout status deploy/bff --timeout=180s
+          kubectl -n "$ns" rollout status deploy/web --timeout=180s

@@ -1,0 +1,4 @@
+#!/bin/sh
+# Fast pre-commit gate: formatting only. Full gate is `npm run verify` and CI.
+npx --no-install prettier --check $(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(ts|html|scss|json|md|yml|yaml)$' || true) 2>/dev/null || {
+  echo "Prettier check failed. Run: npm run format"; exit 1; }

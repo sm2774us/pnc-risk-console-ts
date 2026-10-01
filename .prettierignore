@@ -1,0 +1,8 @@
+dist
+coverage
+.nx
+.angular
+node_modules
+package-lock.json
+*.md
+infra/terraform/**/.terraform.lock.hcl

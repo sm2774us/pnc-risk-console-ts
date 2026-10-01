@@ -1,0 +1,26 @@
+{
+  "name": "risk-feature-policy",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/risk/feature-policy/src",
+  "projectType": "library",
+  "prefix": "pnc",
+  "tags": ["scope:risk", "type:feature"],
+  "targets": {
+    "test": {
+      "executor": "@angular/build:unit-test",
+      "options": {
+        "tsConfig": "libs/risk/feature-policy/tsconfig.spec.json",
+        "buildTarget": "risk-console:build:development",
+        "include": ["libs/risk/feature-policy/src/**/*.spec.ts"],
+        "runner": "vitest",
+        "coverage": true,
+        "coverageReporters": ["text-summary", "lcov"]
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": { "command": "tsc -p tsconfig.lib.json --noEmit && tsc -p tsconfig.spec.json --noEmit", "cwd": "libs/risk/feature-policy" }
+    },
+    "lint": { "executor": "@nx/eslint:lint" }
+  }
+}

@@ -1,0 +1,5 @@
+bucket         = "YOUR-TFSTATE-BUCKET"
+key            = "pnc-risk-console/aws-prod.tfstate"
+region         = "us-east-1"
+dynamodb_table = "YOUR-TFSTATE-LOCK"
+encrypt        = true

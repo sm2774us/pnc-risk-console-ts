@@ -1,0 +1,29 @@
+{
+  "name": "risk-feature-exposure",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/risk/feature-exposure/src",
+  "projectType": "library",
+  "prefix": "pnc",
+  "tags": ["scope:risk", "type:feature"],
+  "targets": {
+    "test": {
+      "executor": "@angular/build:unit-test",
+      "options": {
+        "tsConfig": "libs/risk/feature-exposure/tsconfig.spec.json",
+        "buildTarget": "risk-console:build:development",
+        "include": ["libs/risk/feature-exposure/src/**/*.spec.ts"],
+        "runner": "vitest",
+        "coverage": true,
+        "coverageReporters": ["text-summary", "lcov"]
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p tsconfig.lib.json --noEmit && tsc -p tsconfig.spec.json --noEmit",
+        "cwd": "libs/risk/feature-exposure"
+      }
+    },
+    "lint": { "executor": "@nx/eslint:lint" }
+  }
+}

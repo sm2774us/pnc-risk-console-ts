@@ -1,0 +1,17 @@
+node_modules/
+dist/
+coverage/
+.nx/
+.angular/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+playwright-report/
+test-results/
+.terraform/
+*.tfstate*
+*.tfvars
+!*.tfvars.example
+backend.hcl
+.DS_Store

@@ -1,0 +1,19 @@
+{
+  "name": "risk-console-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/risk-console-e2e/src",
+  "projectType": "application",
+  "tags": ["scope:risk", "type:e2e"],
+  "implicitDependencies": ["risk-console", "bff"],
+  "targets": {
+    "e2e": {
+      "executor": "nx:run-commands",
+      "options": { "command": "playwright test -c playwright.config.ts", "cwd": "apps/risk-console-e2e" }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": { "command": "tsc -p tsconfig.json --noEmit", "cwd": "apps/risk-console-e2e" }
+    },
+    "lint": { "executor": "@nx/eslint:lint" }
+  }
+}

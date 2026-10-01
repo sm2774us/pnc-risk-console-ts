@@ -1,0 +1,8 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    { "label": "dev", "type": "npm", "script": "dev", "isBackground": true, "problemMatcher": [] },
+    { "label": "verify", "type": "npm", "script": "verify", "problemMatcher": ["$tsc"] },
+    { "label": "build:bff", "type": "npm", "script": "build:bff", "problemMatcher": [] }
+  ]
+}
